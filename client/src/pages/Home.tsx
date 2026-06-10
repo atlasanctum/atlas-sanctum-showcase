@@ -5,6 +5,7 @@ import { GalleryModal } from "@/components/GalleryModal";
 import { Testimonials } from "@/components/Testimonials";
 import { FAQ } from "@/components/FAQ";
 import { EmailSignup } from "@/components/EmailSignup";
+import { SocialShare } from "@/components/SocialShare";
 
 /**
  * Atlas Sanctum Showcase - Home Page
@@ -328,7 +329,7 @@ export default function Home() {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             Atlas Sanctum represents a vision of humanity's potential. Through regenerative systems, global collaboration, and the wisdom to prioritize healing over extraction, we can build a future where every action creates value for all life on Earth.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button
               size="lg"
               className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
@@ -340,9 +341,18 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="border-accent text-accent hover:bg-accent/10"
+              asChild
             >
-              Share This Story
+              <a href="/resources">Read Articles</a>
             </Button>
+          </div>
+
+          <div className="mt-12 pt-12 border-t border-border/30">
+            <SocialShare
+              title="Atlas Sanctum: The Age of Regeneration"
+              description="Experience a cinematic vision of Earth's regenerative future."
+              variant="compact"
+            />
           </div>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { SocialShare } from "./SocialShare";
 
 interface Scene {
   id: number;
@@ -147,6 +148,15 @@ export function GalleryModal({
                       }}
                     />
                   </div>
+                </div>
+
+                {/* Social Share */}
+                <div className="pt-4 border-t border-border">
+                  <SocialShare
+                    title={`${currentScene.title} - Atlas Sanctum`}
+                    description={currentScene.description}
+                    variant="compact"
+                  />
                 </div>
 
                 {/* Navigation Info */}

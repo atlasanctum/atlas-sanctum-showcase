@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { EmailSignup } from "@/components/EmailSignup";
+import { SocialShare } from "@/components/SocialShare";
+import { InteractiveTimeline } from "@/components/InteractiveTimeline";
 import { CheckCircle, Zap, Globe, Users } from "lucide-react";
 
 /**
@@ -157,8 +159,22 @@ export default function About() {
         </div>
       </section>
 
+      {/* Interactive Timeline */}
+      <InteractiveTimeline />
+
+      {/* Social Share Section */}
+      <section className="py-20 md:py-32 border-t border-border">
+        <div className="container max-w-6xl mx-auto px-4">
+          <SocialShare
+            title="Atlas Sanctum: The Age of Regeneration"
+            description="Explore a vision of Earth's regenerative future where humanity thrives in harmony with nature."
+            variant="full"
+          />
+        </div>
+      </section>
+
       {/* Timeline */}
-      <section className="py-20 md:py-32 bg-secondary/30 border-y border-border">
+      <section className="py-20 md:py-32 bg-secondary/30 border-y border-border" style={{ display: "none" }}>
         <div className="container max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <div className="accent-line mx-auto mb-6 w-12" />
