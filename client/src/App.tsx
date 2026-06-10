@@ -8,8 +8,8 @@ import { Header } from "./components/Header";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Resources from "./pages/Resources";
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <>
       <Header />

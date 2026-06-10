@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Tag, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { CommunityForum } from "@/components/CommunityForum";
+import { RegenerativeProjectsMap } from "@/components/RegenerativeProjectsMap";
 
 /**
  * Resources Page - Blog & Articles
@@ -303,23 +306,26 @@ export default function Resources() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Newsletter Section */}
+      <section className="py-20 md:py-32 border-t border-border bg-gradient-to-b from-secondary/30 to-background" id="newsletter">
+        <div className="container max-w-2xl mx-auto px-4">
+          <div className="bg-card border border-border rounded-lg p-8 md:p-12 glow-accent">
+            <NewsletterSignup />
+          </div>
+        </div>
+      </section>
+
+      {/* Community Forum Section */}
+      <section className="py-20 md:py-32 border-t border-border">
+        <div className="container max-w-6xl mx-auto px-4">
+          <CommunityForum />
+        </div>
+      </section>
+
+      {/* Regenerative Projects Map Section */}
       <section className="py-20 md:py-32 border-t border-border bg-gradient-to-b from-secondary/30 to-background">
-        <div className="container max-w-4xl mx-auto px-4 text-center">
-          <div className="accent-line mx-auto mb-6 w-12" />
-          <h2 className="text-3xl md:text-4xl font-bold font-['Space_Grotesk'] uppercase tracking-wider mb-6">
-            Stay Informed
-          </h2>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Subscribe to our newsletter to receive new articles, insights, and updates about regenerative futures.
-          </p>
-          <Button
-            size="lg"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
-            asChild
-          >
-            <a href="/#contact">Subscribe Now</a>
-          </Button>
+        <div className="container max-w-6xl mx-auto px-4">
+          <RegenerativeProjectsMap />
         </div>
       </section>
     </div>
