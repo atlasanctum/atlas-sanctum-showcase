@@ -1,6 +1,6 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, newsletterSubscribers, forumPosts, forumReplies, regenerativeProjects } from "../drizzle/schema";
+import { InsertUser, users, newsletterSubscribers, forumPosts, forumReplies, regenerativeProjects, projectSubmissions, userProfiles, userBadges, emailDigests } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -209,4 +209,185 @@ export async function getRegenerativeProjectById(id: number) {
   
   const result = await db.select().from(regenerativeProjects).where(eq(regenerativeProjects.id, id)).limit(1);
   return result.length > 0 ? result[0] : null;
+}
+
+// Project submissions helpers
+export async function submitProject(userId: number, data: {
+  name: string;
+  description: string;
+  category: string;
+  location: string;
+  latitude: string;
+  longitude: string;
+  imageUrl?: string;
+  website?: string;
+  impact?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(projectSubmissions).values({
+    userId,
+    ...data,
+  });
+  
+  // Update user profile
+  await updateUserProfileCount(userId, 'projectSubmissionsCount', 1);
+  
+  return result;
+}
+
+export async function getPendingProjectSubmissions() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(projectSubmissions).where(eq(projectSubmissions.status, 'pending')).orderBy(desc(projectSubmissions.submittedAt));
+}
+
+export async function approveProjectSubmission(submissionId: number, adminId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const submission = await db.select().from(projectSubmissions).where(eq(projectSubmissions.id, submissionId)).limit(1);
+  if (!submission.length) throw new Error("Submission not found");
+  
+  const sub = submission[0];
+  
+  // Create the approved project
+  await db.insert(regenerativeProjects).values({
+    name: sub.name,
+    description: sub.description,
+    category: sub.category,
+    location: sub.location,
+    latitude: sub.latitude,
+    longitude: sub.longitude,
+    imageUrl: sub.imageUrl,
+    website: sub.website,
+    impact: sub.impact,
+  });
+  
+  // Update submission status
+  await db.update(projectSubmissions).set({
+    status: 'approved',
+    reviewedAt: new Date(),
+    reviewedBy: adminId,
+  }).where(eq(projectSubmissions.id, submissionId));
+  
+  // Award badge and update profile
+  await awardBadgeIfEarned(sub.userId, 'project_champion');
+  await updateUserProfileCount(sub.userId, 'approvedProjectsCount', 1);
+  await addReputation(sub.userId, 50);
+}
+
+export async function rejectProjectSubmission(submissionId: number, adminId: number, reason: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(projectSubmissions).set({
+    status: 'rejected',
+    rejectionReason: reason,
+    reviewedAt: new Date(),
+    reviewedBy: adminId,
+  }).where(eq(projectSubmissions.id, submissionId));
+}
+
+// User profile helpers
+export async function getOrCreateUserProfile(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  if (existing.length) return existing[0];
+  
+  await db.insert(userProfiles).values({ userId });
+  const created = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  return created[0];
+}
+
+export async function getUserProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function updateUserProfileCount(userId: number, field: 'forumPostsCount' | 'projectSubmissionsCount' | 'approvedProjectsCount', increment: number) {
+  const db = await getDb();
+  if (!db) return;
+  
+  const profile = await getUserProfile(userId);
+  if (!profile) {
+    await getOrCreateUserProfile(userId);
+  }
+  
+  const currentValue = profile?.[field] || 0;
+  await db.update(userProfiles).set({
+    [field]: currentValue + increment,
+  }).where(eq(userProfiles.userId, userId));
+}
+
+export async function addReputation(userId: number, points: number) {
+  const db = await getDb();
+  if (!db) return;
+  
+  const profile = await getUserProfile(userId);
+  if (!profile) {
+    await getOrCreateUserProfile(userId);
+  }
+  
+  const currentReputation = profile?.reputation || 0;
+  await db.update(userProfiles).set({
+    reputation: currentReputation + points,
+  }).where(eq(userProfiles.userId, userId));
+}
+
+// User badges helpers
+export async function awardBadgeIfEarned(userId: number, badgeType: 'first_post' | 'prolific_contributor' | 'project_champion' | 'community_leader' | 'regeneration_pioneer') {
+  const db = await getDb();
+  if (!db) return;
+  
+  // Check if user already has this badge
+  const existing = await db.select().from(userBadges).where(
+    and(eq(userBadges.userId, userId), eq(userBadges.badgeType, badgeType))
+  ).limit(1);
+  
+  if (!existing.length) {
+    await db.insert(userBadges).values({ userId, badgeType });
+  }
+}
+
+export async function getUserBadges(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(userBadges).where(eq(userBadges.userId, userId)).orderBy(desc(userBadges.earnedAt));
+}
+
+// Leaderboard helpers
+export async function getLeaderboard(limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(userProfiles).orderBy(desc(userProfiles.reputation)).limit(limit);
+}
+
+// Email digest helpers
+export async function createEmailDigest(subscriberId: number, topPosts: any[], newProjects: any[], featuredArticles: any[]) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return db.insert(emailDigests).values({
+    subscriberId,
+    topPostsJson: JSON.stringify(topPosts),
+    newProjectsJson: JSON.stringify(newProjects),
+    featuredArticlesJson: JSON.stringify(featuredArticles),
+  });
+}
+
+export async function getRecentEmailDigests(subscriberId: number, limit: number = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(emailDigests).where(eq(emailDigests.subscriberId, subscriberId)).orderBy(desc(emailDigests.sentAt)).limit(limit);
 }

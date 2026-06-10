@@ -8,6 +8,13 @@
       "when": 1781081069359,
       "tag": "0000_daily_winter_soldier",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1781081457433,
+      "tag": "0001_lumpy_nick_fury",
+      "breakpoints": true
     }
   ]
 }
