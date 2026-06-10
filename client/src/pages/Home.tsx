@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Play, Volume2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { GalleryModal } from "@/components/GalleryModal";
+import { Testimonials } from "@/components/Testimonials";
+import { FAQ } from "@/components/FAQ";
+import { EmailSignup } from "@/components/EmailSignup";
 
 /**
  * Atlas Sanctum Showcase - Home Page
@@ -22,6 +26,8 @@ const scenes = [
     image: "/manus-storage/scene1_bleak_present_4365f1c5.png",
     timeCode: "0:00 - 0:25",
     color: "from-red-900/20 to-orange-900/20",
+    fullDescription:
+      "The opening sequence establishes the stakes. Through news broadcasts and satellite imagery, we witness the consequences of extraction-based systems: environmental collapse, social unrest, and institutional breakdown. This is not a distant future—it is the trajectory we are on.",
   },
   {
     id: 2,
@@ -32,6 +38,8 @@ const scenes = [
     image: "/manus-storage/scene2_future_nairobi_effe1f0e.png",
     timeCode: "0:25 - 1:05",
     color: "from-emerald-900/20 to-cyan-900/20",
+    fullDescription:
+      "A young girl stands on a rooftop in future Nairobi, overlooking a city transformed. Vertical forests provide food and oxygen. Autonomous systems work alongside humans. The shift from extraction to restoration has begun, and the results are visible.",
   },
   {
     id: 3,
@@ -42,6 +50,8 @@ const scenes = [
     image: "/manus-storage/scene3_atlas_sanctum_89156d97.png",
     timeCode: "1:05 - 2:00",
     color: "from-cyan-900/20 to-emerald-900/20",
+    fullDescription:
+      "The Atlas Sanctum Network represents the infrastructure of regeneration. A global intelligence that connects humans, AI, and natural systems. When a child plants a tree, the system visualizes the future forest, the biodiversity that will flourish, and the prosperity that will result. Healing becomes visible, measurable, and valued.",
   },
   {
     id: 4,
@@ -52,6 +62,8 @@ const scenes = [
     image: "/manus-storage/scene4_final_hope_951f4581.png",
     timeCode: "2:40 - 3:00",
     color: "from-amber-900/20 to-yellow-900/20",
+    fullDescription:
+      "The final scene brings the narrative full circle. A moment of intergenerational wisdom. The grandfather's tears are not of sadness, but of relief—the realization that humanity found a better way. His granddaughter will grow up in a world where destruction is not the path to wealth, but restoration is.",
   },
 ];
 
@@ -59,6 +71,7 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [selectedSceneId, setSelectedSceneId] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handlePlayPause = () => {
@@ -179,6 +192,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                  onClick={() => setSelectedSceneId(1)}
                 >
                   Watch Storyboard
                 </Button>
@@ -186,8 +200,9 @@ export default function Home() {
                   size="lg"
                   variant="outline"
                   className="border-accent text-accent hover:bg-accent/10"
+                  asChild
                 >
-                  Learn More
+                  <a href="/about">Learn More</a>
                 </Button>
               </div>
             </div>
@@ -213,8 +228,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <Testimonials />
+
       {/* Storyboard Timeline Section */}
-      <section className="py-20 bg-secondary/30">
+      <section className="py-20 md:py-32 bg-secondary/30" id="storyboard">
         <div className="container max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <div className="accent-line mx-auto mb-6 w-12" />
@@ -240,7 +258,10 @@ export default function Home() {
                   }`}
                 >
                   {/* Image */}
-                  <div className="relative rounded-lg overflow-hidden glow-accent-hover group">
+                  <button
+                    onClick={() => setSelectedSceneId(scene.id)}
+                    className="relative rounded-lg overflow-hidden glow-accent-hover group cursor-pointer"
+                  >
                     <img
                       src={scene.image}
                       alt={scene.title}
@@ -252,7 +273,10 @@ export default function Home() {
                         {scene.timeCode}
                       </span>
                     </div>
-                  </div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+                      <Play className="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </button>
 
                   {/* Content */}
                   <div className="space-y-4">
@@ -279,8 +303,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <FAQ />
+
+      {/* Email Signup Section */}
+      <section className="py-20 md:py-32 border-t border-border" id="contact">
+        <div className="container max-w-2xl mx-auto px-4">
+          <div className="bg-card border border-border rounded-lg p-8 md:p-12 glow-accent">
+            <EmailSignup />
+          </div>
+        </div>
+      </section>
+
       {/* Call to Action Section */}
-      <section className="py-20 bg-gradient-to-b from-secondary/30 to-background border-t border-border">
+      <section className="py-20 md:py-32 bg-gradient-to-b from-secondary/30 to-background border-t border-border">
         <div className="container max-w-4xl mx-auto px-4 text-center">
           <div className="accent-line mx-auto mb-6 w-12" />
           <h2 className="text-4xl md:text-5xl font-bold font-['Space_Grotesk'] uppercase tracking-wider mb-6">
@@ -296,8 +332,9 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+              asChild
             >
-              Explore the Vision
+              <a href="/about">Explore the Vision</a>
             </Button>
             <Button
               size="lg"
@@ -309,6 +346,14 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Gallery Modal */}
+      <GalleryModal
+        scenes={scenes}
+        isOpen={selectedSceneId !== null}
+        onClose={() => setSelectedSceneId(null)}
+        initialSceneId={selectedSceneId || undefined}
+      />
 
       {/* Footer */}
       <footer className="border-t border-border bg-card/50 py-12">
